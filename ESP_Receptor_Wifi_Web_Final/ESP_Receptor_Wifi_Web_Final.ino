@@ -8,6 +8,9 @@
 const char* ssid = "ESP_AP";
 const char* password = "12345678";
 
+// Defina o pino do botão
+const int buttonPin = 0;
+
 // Crie um servidor web na porta 80
 WebServer server(80);
 
@@ -46,6 +49,9 @@ void setup() {
     return;
   }
 
+  // Configura o pino do botão como entrada
+  pinMode(buttonPin, INPUT_PULLUP);
+
   // Rota para a página principal
   server.on("/", HTTP_GET, handleRoot);
   // Rota para baixar um arquivo
@@ -67,6 +73,13 @@ void setup() {
 
 void loop() {
   server.handleClient(); // Lida com as requisições do cliente
+
+  // Verifica o estado do botão
+  if (digitalRead(buttonPin) == LOW) {
+    Serial.println("Button pressed, clearing memory...");
+    clearSPIFFS();
+    delay(1000); // Debounce delay
+  }
 }
 
 void handleRoot() {
@@ -108,7 +121,7 @@ void handleRoot() {
 
   html += "<h2>File Logs:</h2>";
   html += "<table border='1'>";
-  html += "<tr><th>Filename</th><th>Size (bytes)</th><th>Type</th><th>Start Time (ms)</th><th>End Time (ms)</th><th>Jitter (ms)</th><th>Packets</th><th>Avg Latency (ms)</th><th>Max Latency (ms)</th><th>Min Latency (ms)</th><th>Success Packets</th><th>Error Packets</th></tr>";
+  html += "<tr><th>Filename</th><th>Size (bytes)</th><th>Type</th><th>Start Time(ms)</th><th>End Time (ms)</th><th>Duration (ms)</th><th>Jitter (ms)</th><th>Packets</th><th>Avg Latency (ms)</th><th>Max Latency (ms)</th><th>Min Latency (ms)</th><th>Success Packets</th><th>Error Packets</th></tr>";
 
   for (auto& log : fileLogs) {
     html += "<tr>";
@@ -117,6 +130,7 @@ void handleRoot() {
     html += "<td>" + log.type + "</td>";
     html += "<td>" + String(log.startTime) + "</td>";
     html += "<td>" + String(log.endTime) + "</td>";
+    html += "<td>" + String(log.endTime - log.startTime) + "</td>"; // Duração calculada
     html += "<td>" + String(log.jitter) + "</td>";
     html += "<td>" + String(log.packets) + "</td>";
     html += "<td>" + String(log.packets ? log.totalLatency / log.packets : 0) + "</td>";
@@ -339,4 +353,14 @@ String formatBytes(size_t bytes) {
   } else {
     return String(bytes / 1024.0 / 1024.0 / 1024.0) + " GB";
   }
+}
+
+void clearSPIFFS() {
+  File root = SPIFFS.open("/");
+  File file = root.openNextFile();
+  while (file) {
+    SPIFFS.remove(file.name());
+    file = root.openNextFile();
+  }
+  Serial.println("All files deleted from SPIFFS");
 }
