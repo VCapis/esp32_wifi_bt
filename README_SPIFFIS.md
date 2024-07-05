@@ -40,10 +40,14 @@ git clone https://github.com/VCapis/esp32_wifi_bt.git
 - Instalar o "*ESPAsyncWebServer* _by lacamera_" juntamente com as dependências solicitadas ( "AsyncTCP _by dvarrel_" e "*ESPAsyncTCP* _by dvarrel_")
 
 
-Faça a instalação do Python :
-https://www.python.org/downloads/
+# Exemplo de Configuração no Arduino IDE
+- Ferramentas > Placa > ESP32 Dev Module
+- Ferramentas > Upload Speed > 115200
+- Ferramentas > Flash Frequency > 40MHz
+- Ferramentas > Flash Mode > DIO
+- Ferramentas > Partition Scheme > Default 4MB with spiffs
 
-
+http://192.168.4.1/
 
 
 
